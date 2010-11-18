@@ -98,6 +98,19 @@ describe "Array#flatten" do
     lambda { [obj].flatten.should == [obj] }.should_not raise_error(NoMethodError)
   end
 
+  it "does not call to_ary on an elements if element does not respond to to_ary" do
+    NotNoMethodError = Class.new(StandardError)
+    obj = Class.new do
+      def method_missing(symbol, *args, &block)
+        symbol == :to_ary ? raise(NotNoMethodError) : super
+      end
+      def respond_to?(symbol, include_private = false)
+        symbol == :to_ary ? false : super
+      end
+    end.new
+    lambda { [obj].flatten.should == [obj] }.should_not raise_error(NotNoMethodError)
+  end
+
   it "ignores the return value of to_ary if it is nil" do
     obj = Class.new do
       def to_ary
