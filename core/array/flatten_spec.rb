@@ -92,6 +92,30 @@ describe "Array#flatten" do
     ary.flatten
     ary.should == [1, [2, 3]]
   end
+
+  it "ignores NoMethodError raised by calling to_ary on element with no to_ary method" do
+    obj = Object.new
+    lambda { [obj].flatten.should == [obj] }.should_not raise_error(NoMethodError)
+  end
+
+  it "ignores the return value of to_ary if it is nil" do
+    obj = Class.new do
+      def to_ary
+        nil
+      end
+    end.new
+    [obj].flatten.should == [obj]
+  end
+
+  it "raises TypeError if return value of to_ary is not an Array" do
+    obj = Class.new do
+      def to_ary
+        1
+      end
+    end.new
+    lambda { [obj].flatten }.should raise_error(TypeError)
+  end
+
 end
 
 describe "Array#flatten!" do
